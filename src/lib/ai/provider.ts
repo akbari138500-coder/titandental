@@ -171,7 +171,7 @@ You must return ONLY a JSON response in the following format (no other text, no 
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "meta/llama-3.1-70b-instruct",
+        model: process.env.NVIDIA_MODEL || "meta/llama-3.1-70b-instruct",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Here is the student's treatment plan:\n\n${sanitizedPlan}` }

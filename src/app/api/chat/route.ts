@@ -54,7 +54,7 @@ Always reply in fluent Persian (Farsi). Reference dental textbook guidelines (e.
           "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: "meta/llama-3.1-70b-instruct",
+          model: process.env.NVIDIA_MODEL || "meta/llama-3.1-70b-instruct",
           messages: [
             { role: "system", content: systemPrompt },
             ...messages.map((m: any) => ({ role: m.role, content: m.content }))
