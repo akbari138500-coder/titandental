@@ -1,3 +1,9 @@
 name = "titandental"
 compatibility_date = "2024-05-02"
 compatibility_flags = [ "nodejs_compat" ]
+
+# Note: Cloudflare Pages does not natively support cron triggers.
+# To keep the database alive, use an external free cron service such as:
+#   - https://cron-job.org (free, supports HTTPS)
+# Point it to: https://your-domain.pages.dev/api/cron/keep-alive
+# Schedule: every 5 minutes (*/5 * * * *)

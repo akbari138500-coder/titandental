@@ -10,8 +10,11 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.9.5",
+    "@prisma/adapter-neon": "^5.14.0",
     "@prisma/client": "^5.14.0",
     "clsx": "^2.1.1",
+    "jose": "^5.4.0",
     "lucide-react": "^0.379.0",
     "next": "^14.2.3",
     "react": "^18.3.1",

@@ -1,10 +1,13 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DATABASE_URL_UNPOOLED")
+  extensions = [vector]
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "driverAdapters"]
 }
 
 enum Role {
@@ -66,15 +69,15 @@ model Case {
   subjectId         String
   subject           Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   chiefComplaint    String
-  demographic       String             // demographic summary, e.g. "مرد ۴۵ ساله، کارمند"
-  hpi               String             // History of Present Illness
-  medicalHistory    String?            // medical, dental, social history
-  examNotes         String             // clinical examination details
+  demographic       String
+  hpi               String
+  medicalHistory    String?
+  examNotes         String
   difficulty        Difficulty         @default(BEGINNER)
   published         Boolean            @default(true)
-  referencePlan     String             // Detailed clinical reference plan
-  referenceRubric   Json               // Structured weighted checklist: matching targets
-  scientificSource  String?            // Reference text e.g., "Cohen's Pathways of the Pulp, 12th Ed"
+  referencePlan     String
+  referenceRubric   Json
+  scientificSource  String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   images            CaseImage[]
@@ -92,10 +95,10 @@ model CaseImage {
   id            String    @id @default(uuid())
   caseId        String
   case          Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  url           String    // S3 URL
+  url           String
   caption       String?
   type          ImageType @default(RADIOGRAPH)
-  licenseSource String?   // verification for original case/permission
+  licenseSource String?
   createdAt     DateTime  @default(now())
 
   @@index([caseId])
@@ -105,10 +108,10 @@ model DiagnosticTest {
   id           String   @id @default(uuid())
   caseId       String
   case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  name         String   // e.g. "تست سرما (Cold Test)"
-  result       String   // e.g. "درد شدید و ماندگار بیش از ۳۰ ثانیه"
-  isNecessary  Boolean  @default(false) // If this test is vital for diagnosis
-  costWeight   Float    @default(0.0)   // Penalty for doing unnecessary tests
+  name         String
+  result       String
+  isNecessary  Boolean  @default(false)
+  costWeight   Float    @default(0.0)
   createdAt    DateTime @default(now())
 
   @@index([caseId])
@@ -121,12 +124,12 @@ model Attempt {
   caseId                 String
   case                   Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
   finalScore             Float
-  matchedItems           Json      // JSON array of RubricItem keys student covered
-  missedItems            Json      // JSON array of RubricItem keys student missed
-  incorrectItems         Json      // JSON array of student's errors
-  feedback               String    // Farsi feedback from AI
+  matchedItems           Json
+  missedItems            Json
+  incorrectItems         Json
+  feedback               String
   safetyFlag             Boolean   @default(false)
-  treatmentPlanSubmitted String    // Free-text submitted by student
+  treatmentPlanSubmitted String
   completedAt            DateTime  @default(now())
 
   @@index([userId])
@@ -139,9 +142,9 @@ model Question {
   case          Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
   type          QuestionType @default(MCQ)
   text          String
-  options       Json         // list of choices
-  correctAnswer Json         // correct choice details
-  explanation   String       // deep explanations on why options are correct/wrong
+  options       Json
+  correctAnswer Json
+  explanation   String
   createdAt     DateTime     @default(now())
 
   @@index([caseId])
@@ -153,8 +156,8 @@ model StudyProgress {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   subjectId     String
   subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  mastery       Float    @default(0.0) // 0 to 100
-  heatMapData   Json     // tracking dates of reviews
+  mastery       Float    @default(0.0)
+  heatMapData   Json
   lastStudiedAt DateTime @default(now())
 
   @@unique([userId, subjectId])
@@ -167,23 +170,22 @@ model SpacedRepetition {
   caseId       String
   case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
   nextReviewAt DateTime @default(now())
-  interval     Float    @default(1.0)  // interval in days
-  easeFactor   Float    @default(2.5)  // SM-2 algorithm value
-  repetitions  Int      @default(0)    // number of consecutive successful repetitions
+  interval     Float    @default(1.0)
+  easeFactor   Float    @default(2.5)
+  repetitions  Int      @default(0)
 
   @@unique([userId, caseId])
 }
 
 model ChatMessage {
-  id             String    @id @default(uuid())
-  userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  caseId         String?
-  case           Case?     @relation(fields: [caseId], references: [id], onDelete: SetNull)
-  role           String    // "user" or "assistant"
-  text           String
-  embedding      Unsupported("vector(1536)")? // pgvector embedding for search
-  createdAt      DateTime  @default(now())
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId    String?
+  case      Case?    @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  role      String
+  text      String
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([caseId])
