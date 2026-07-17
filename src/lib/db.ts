@@ -1,6 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaNeonHTTP } from "@prisma/adapter-neon";
-import { neon } from "@neondatabase/serverless";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
@@ -9,13 +7,11 @@ function createClient(): PrismaClient {
 
   if (!process.env.DATABASE_URL) {
     throw new Error(
-      "DATABASE_URL is not set. Add it as an environment variable in your Cloudflare Pages settings."
+      "DATABASE_URL is not set. Add it as an environment variable in your Netlify settings."
     );
   }
 
-  const sql = neon(process.env.DATABASE_URL);
-  const adapter = new PrismaNeonHTTP(sql);
-  const client = new PrismaClient({ adapter } as any);
+  const client = new PrismaClient();
 
   if (process.env.NODE_ENV !== "production") {
     globalForPrisma.prisma = client;
