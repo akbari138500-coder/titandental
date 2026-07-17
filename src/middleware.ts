@@ -80,7 +80,8 @@ export async function middleware(req: NextRequest) {
   requestHeaders.set("x-user-id", user.userId);
   requestHeaders.set("x-user-email", user.email);
   requestHeaders.set("x-user-role", user.role);
-  requestHeaders.set("x-user-name", user.name);
+  // URL encode the name because HTTP headers don't support Persian (UTF-8) characters natively
+  requestHeaders.set("x-user-name", encodeURIComponent(user.name));
 
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
