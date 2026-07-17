@@ -1,0 +1,190 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  COMPREHENSIVE
+}
+
+enum ImageType {
+  CLINICAL
+  RADIOGRAPH
+  LAB
+}
+
+enum QuestionType {
+  MCQ
+  SPOT
+  SEQUENCING
+  MATCHING
+  FREE_TEXT
+}
+
+model User {
+  id                String             @id @default(uuid())
+  name              String
+  email             String             @unique
+  passwordHash      String
+  role              Role               @default(STUDENT)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  attempts          Attempt[]
+  studyProgress     StudyProgress[]
+  spacedRepetitions SpacedRepetition[]
+  chatMessages      ChatMessage[]
+
+  @@index([email])
+}
+
+model Subject {
+  id            String          @id @default(uuid())
+  name          String
+  slug          String          @unique
+  description   String?
+  published     Boolean         @default(true)
+  cases         Case[]
+  studyProgress StudyProgress[]
+}
+
+model Case {
+  id                String             @id @default(uuid())
+  title             String
+  slug              String             @unique
+  subjectId         String
+  subject           Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  chiefComplaint    String
+  demographic       String             // demographic summary, e.g. "مرد ۴۵ ساله، کارمند"
+  hpi               String             // History of Present Illness
+  medicalHistory    String?            // medical, dental, social history
+  examNotes         String             // clinical examination details
+  difficulty        Difficulty         @default(BEGINNER)
+  published         Boolean            @default(true)
+  referencePlan     String             // Detailed clinical reference plan
+  referenceRubric   Json               // Structured weighted checklist: matching targets
+  scientificSource  String?            // Reference text e.g., "Cohen's Pathways of the Pulp, 12th Ed"
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  images            CaseImage[]
+  diagnosticTests   DiagnosticTest[]
+  attempts          Attempt[]
+  questions         Question[]
+  spacedRepetitions SpacedRepetition[]
+  chatMessages      ChatMessage[]
+
+  @@index([subjectId])
+  @@index([slug])
+}
+
+model CaseImage {
+  id            String    @id @default(uuid())
+  caseId        String
+  case          Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  url           String    // S3 URL
+  caption       String?
+  type          ImageType @default(RADIOGRAPH)
+  licenseSource String?   // verification for original case/permission
+  createdAt     DateTime  @default(now())
+
+  @@index([caseId])
+}
+
+model DiagnosticTest {
+  id           String   @id @default(uuid())
+  caseId       String
+  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  name         String   // e.g. "تست سرما (Cold Test)"
+  result       String   // e.g. "درد شدید و ماندگار بیش از ۳۰ ثانیه"
+  isNecessary  Boolean  @default(false) // If this test is vital for diagnosis
+  costWeight   Float    @default(0.0)   // Penalty for doing unnecessary tests
+  createdAt    DateTime @default(now())
+
+  @@index([caseId])
+}
+
+model Attempt {
+  id                     String    @id @default(uuid())
+  userId                 String
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId                 String
+  case                   Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  finalScore             Float
+  matchedItems           Json      // JSON array of RubricItem keys student covered
+  missedItems            Json      // JSON array of RubricItem keys student missed
+  incorrectItems         Json      // JSON array of student's errors
+  feedback               String    // Farsi feedback from AI
+  safetyFlag             Boolean   @default(false)
+  treatmentPlanSubmitted String    // Free-text submitted by student
+  completedAt            DateTime  @default(now())
+
+  @@index([userId])
+  @@index([caseId])
+}
+
+model Question {
+  id            String       @id @default(uuid())
+  caseId        String
+  case          Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  type          QuestionType @default(MCQ)
+  text          String
+  options       Json         // list of choices
+  correctAnswer Json         // correct choice details
+  explanation   String       // deep explanations on why options are correct/wrong
+  createdAt     DateTime     @default(now())
+
+  @@index([caseId])
+}
+
+model StudyProgress {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  mastery       Float    @default(0.0) // 0 to 100
+  heatMapData   Json     // tracking dates of reviews
+  lastStudiedAt DateTime @default(now())
+
+  @@unique([userId, subjectId])
+}
+
+model SpacedRepetition {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId       String
+  case         Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  nextReviewAt DateTime @default(now())
+  interval     Float    @default(1.0)  // interval in days
+  easeFactor   Float    @default(2.5)  // SM-2 algorithm value
+  repetitions  Int      @default(0)    // number of consecutive successful repetitions
+
+  @@unique([userId, caseId])
+}
+
+model ChatMessage {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId         String?
+  case           Case?     @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  role           String    // "user" or "assistant"
+  text           String
+  embedding      Unsupported("vector(1536)")? // pgvector embedding for search
+  createdAt      DateTime  @default(now())
+
+  @@index([userId])
+  @@index([caseId])
+}
