@@ -4,6 +4,8 @@ import CaseViewer from "@/components/CaseViewer";
 import { mockCases } from "@/lib/data/mockCases";
 import { redirect } from "next/navigation";
 
+export const runtime = 'edge';
+
 interface CasePageProps {
   params: {
     caseId: string;
