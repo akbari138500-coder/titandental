@@ -9,7 +9,7 @@ import {
 import { mockCases, RubricItemData, DiagnosticTestData } from "@/lib/data/mockCases";
 
 export default function AdminPage() {
-  const [activeSubTab, setActiveSubTab] = useState<"list" | "create">("list");
+  const [activeSubTab, setActiveSubTab] = useState<"list" | "create" | "generate">("list");
   
   // New Case States
   const [title, setTitle] = useState("");
@@ -127,7 +127,17 @@ export default function AdminPage() {
                   : "bg-white dark:bg-clinical-darker border border-clinical-navy/10 dark:border-white/10"
               }`}
             >
-              <FolderPlus className="h-4 w-4" /> ایجاد کیس جدید
+              <FolderPlus className="h-4 w-4" /> ایجاد دستی
+            </button>
+            <button 
+              onClick={() => setActiveSubTab("generate")}
+              className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                activeSubTab === "generate" 
+                  ? "bg-clinical-clay text-white border-clinical-clay" 
+                  : "bg-white dark:bg-clinical-darker border border-clinical-clay/30 text-clinical-clay"
+              }`}
+            >
+              <Settings className="h-4 w-4" /> ساخت کیس با AI
             </button>
           </div>
         </div>
@@ -428,9 +438,95 @@ export default function AdminPage() {
               </button>
             </div>
           </div>
+        ) : (
+          /* Generate Case with AI Form */
+          <AICaseGenerator setActiveSubTab={setActiveSubTab} />
         )}
 
       </main>
+    </div>
+  );
+}
+
+function AICaseGenerator({ setActiveSubTab }: { setActiveSubTab: (tab: "list") => void }) {
+  const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!prompt) {
+      alert("لطفاً یک موضوع یا توضیحات برای هوش مصنوعی بنویسید.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/cases/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        alert("کیس جدید با موفقیت توسط هوش مصنوعی تولید و در دیتابیس ذخیره شد!");
+        setActiveSubTab("list");
+      } else {
+        alert("خطا در تولید کیس: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("خطا در ارتباط با سرور هوش مصنوعی.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-clinical-darker border border-clinical-navy/10 dark:border-white/5 rounded-2xl p-6 space-y-6 shadow-sm">
+      <h2 className="text-md font-bold text-clinical-clay border-b border-clinical-navy/5 dark:border-white/5 pb-2 flex items-center gap-2">
+        <Settings className="w-5 h-5 animate-spin-slow" />
+        تولید کیس بالینی با هوش مصنوعی (NVIDIA Llama 3)
+      </h2>
+      
+      <div className="space-y-4">
+        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 text-xs rounded-xl border border-indigo-200 dark:border-indigo-800/50 leading-relaxed">
+          <strong>راهنما:</strong> موضوع، درجه سختی، یا مشخصات بیماری که می‌خواهید ایجاد کنید را به زبان ساده (فارسی یا انگلیسی) بنویسید. هوش مصنوعی Llama 3 به صورت خودکار یک کیس کاملاً استاندارد با شرح حال کامل، یافته‌های بالینی، و مهم‌تر از همه <strong>روباریک‌های ارزیابی (Rubrics)</strong> تولید کرده و مستقیماً در دیتابیس ذخیره می‌کند.
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[11px] font-bold text-clinical-navy/70 dark:text-clinical-light/70">پرامپت (دستورالعمل به هوش مصنوعی):</label>
+          <textarea 
+            rows={5} 
+            value={prompt} 
+            onChange={(e) => setPrompt(e.target.value)} 
+            placeholder="مثال: یک کیس سخت اندودانتیکس برای دندان ۳۶ با کانال کلسیفیه و سابقه درد شبانه ایجاد کن..."
+            className="w-full p-4 text-sm bg-slate-50 dark:bg-slate-900 border border-clinical-navy/10 dark:border-white/10 rounded-xl focus:border-clinical-clay outline-none leading-relaxed"
+            disabled={loading}
+          />
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <button 
+            onClick={handleGenerate}
+            disabled={loading}
+            className={`px-6 py-3 text-white text-xs font-bold rounded-xl flex items-center gap-2 transition-all shadow-md ${loading ? 'bg-clinical-navy/50 cursor-not-allowed' : 'bg-clinical-clay hover:bg-clinical-clay/90 active:scale-95'}`}
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                در حال تولید هوشمند (ممکن است چند ثانیه طول بکشد)...
+              </>
+            ) : (
+              <>
+                <Settings className="h-4 w-4" /> جادوی هوش مصنوعی: ساخت کیس
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
