@@ -206,7 +206,7 @@ export default function AdminPage() {
               </table>
             </div>
           </div>
-        ) : (
+        ) : activeSubTab === "create" ? (
           /* Create New Case Form */
           <div className="bg-white dark:bg-clinical-darker border border-clinical-navy/10 dark:border-white/5 rounded-2xl p-6 space-y-6 shadow-sm">
             <h2 className="text-md font-bold text-clinical-clay border-b border-clinical-navy/5 dark:border-white/5 pb-2">فرم ساخت کیس بالینی جدید</h2>

@@ -3,7 +3,7 @@ import { evaluateTreatmentPlan } from "@/lib/ai/provider";
 import { mockCases } from "@/lib/data/mockCases";
 import { prisma } from "@/lib/db";
 
-export const runtime = 'edge';
+
 
 export async function POST(req: NextRequest) {
   try {
