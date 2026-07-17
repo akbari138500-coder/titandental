@@ -28,7 +28,7 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "خطا در ثبت‌نام. دوباره تلاش کنید.");
+        setError(data.error + (data.details ? ` (${data.details})` : ""));
         return;
       }
 
