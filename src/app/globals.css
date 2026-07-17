@@ -2,73 +2,212 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply transition-colors duration-200;
-  }
+/* ── Premium Animations ─────────────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-12px) rotate(1deg); }
+  66% { transform: translateY(-6px) rotate(-1deg); }
 }
 
-/* Clinical-Editorial UI styles */
-.clinical-container {
-  box-shadow: 0 4px 20px -2px rgba(11, 19, 41, 0.08);
-  border: 1px solid rgba(15, 37, 55, 0.08);
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
 }
 
-.dark .clinical-container {
-  box-shadow: 0 4px 25px -2px rgba(0, 0, 0, 0.4);
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes progress-fill {
+  from { width: 0%; }
+  to { width: var(--target-width); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-delay { animation: float 6s ease-in-out 2s infinite; }
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-slide-up { animation: slide-up 0.5s ease-out forwards; }
+.animate-spin-slow { animation: spin-slow 20s linear infinite; }
+.animate-count { animation: count-up 0.6s ease-out forwards; }
+
+/* ── Glassmorphism ──────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Scrollbar customization */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
+.dark .glass-card {
+  background: rgba(15, 37, 55, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600;
+/* ── Gradient Text ──────────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #a82020 0%, #d4302a 50%, #e84444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* PACS Radiography Viewer active cursor */
-.pacs-viewer-canvas {
-  cursor: grab;
-}
-.pacs-viewer-canvas:active {
-  cursor: grabbing;
-}
-
-/* Heatmap animation details */
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+.gradient-text-gold {
+  background: linear-gradient(135deg, #d4af37 0%, #f0d060 50%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.pulse-soft {
-  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.shimmer-text {
+  background: linear-gradient(90deg, #a82020 0%, #e84444 25%, #d4af37 50%, #a82020 75%, #e84444 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
 }
 
-/* Patient Chart Tab System */
-.chart-tab {
-  position: relative;
-  transition: all 0.2s ease-in-out;
+/* ── Background Gradients ───────────────────────────────────────────────── */
+.hero-gradient {
+  background: radial-gradient(ellipse at 20% 50%, rgba(168, 32, 32, 0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(212, 175, 55, 0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 60% 80%, rgba(13, 148, 136, 0.05) 0%, transparent 50%);
 }
 
+.dark .hero-gradient {
+  background: radial-gradient(ellipse at 20% 50%, rgba(168, 32, 32, 0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 60% 80%, rgba(13, 148, 136, 0.08) 0%, transparent 50%);
+}
+
+.card-gradient-red {
+  background: linear-gradient(135deg, #a82020 0%, #c0392b 100%);
+}
+
+.card-gradient-teal {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+}
+
+.card-gradient-gold {
+  background: linear-gradient(135deg, #b8941e 0%, #d4af37 100%);
+}
+
+.card-gradient-navy {
+  background: linear-gradient(135deg, #0f2537 0%, #1e3a5f 100%);
+}
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+.premium-card {
+  @apply bg-white dark:bg-clinical-darker rounded-2xl border border-clinical-navy/8 dark:border-white/5 shadow-sm hover:shadow-lg transition-all duration-300;
+}
+
+.stat-card {
+  @apply p-6 rounded-2xl relative overflow-hidden;
+}
+
+/* ── Hover Effects ──────────────────────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px -8px rgba(11, 19, 41, 0.15);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { @apply bg-transparent; }
+::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-700 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-clinical-clay; }
+
+/* ── Progress Bar ───────────────────────────────────────────────────────── */
+.progress-bar {
+  @apply h-1.5 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800;
+}
+
+.progress-fill {
+  @apply h-full rounded-full transition-all duration-1000 ease-out;
+}
+
+/* ── PACS Viewer ────────────────────────────────────────────────────────── */
+.pacs-viewer-canvas { cursor: grab; }
+.pacs-viewer-canvas:active { cursor: grabbing; }
+
+/* ── Chart Tab ──────────────────────────────────────────────────────────── */
+.chart-tab { position: relative; transition: all 0.2s ease-in-out; }
 .chart-tab::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   height: 2px;
   background-color: theme('colors.clinical.clay');
   transform: scaleX(0);
   transition: transform 0.2s ease;
 }
+.chart-tab-active::after { transform: scaleX(1); }
 
-.chart-tab-active::after {
-  transform: scaleX(1);
+/* ── Pulse Soft ─────────────────────────────────────────────────────────── */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
+.pulse-soft { animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+/* ── Noise Texture Overlay ──────────────────────────────────────────────── */
+.noise-overlay {
+  position: relative;
+}
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Badge ──────────────────────────────────────────────────────────────── */
+.badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+}
+
+.badge-red { @apply bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300; }
+.badge-teal { @apply bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300; }
+.badge-gold { @apply bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300; }
+.badge-navy { @apply bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300; }
