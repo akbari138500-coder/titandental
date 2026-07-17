@@ -128,7 +128,7 @@
 
 /* ── Cards ──────────────────────────────────────────────────────────────── */
 .premium-card {
-  @apply bg-white dark:bg-clinical-darker rounded-2xl border border-clinical-navy/8 dark:border-white/5 shadow-sm hover:shadow-lg transition-all duration-300;
+  @apply bg-white dark:bg-clinical-darker rounded-2xl border border-clinical-navy/10 dark:border-white/5 shadow-sm hover:shadow-lg transition-all duration-300;
 }
 
 .stat-card {
