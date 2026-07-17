@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword, createToken, buildAuthCookie } from "@/lib/auth";
 
-export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
   try {
