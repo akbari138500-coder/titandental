@@ -22,6 +22,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0f172a" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         {/* Restore theme from localStorage before first paint to prevent flash */}
         <script
           dangerouslySetInnerHTML={{

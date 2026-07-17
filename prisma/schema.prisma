@@ -39,6 +39,8 @@ model User {
   email             String             @unique
   passwordHash      String
   role              Role               @default(STUDENT)
+  xp                Int                @default(0)
+  badges            Json?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   attempts          Attempt[]
@@ -95,6 +97,7 @@ model CaseImage {
   url           String
   caption       String?
   type          ImageType @default(RADIOGRAPH)
+  hotspots      Json?
   licenseSource String?
   createdAt     DateTime  @default(now())
 
@@ -127,6 +130,7 @@ model Attempt {
   feedback               String
   safetyFlag             Boolean   @default(false)
   treatmentPlanSubmitted String
+  startedAt              DateTime  @default(now())
   completedAt            DateTime  @default(now())
 
   @@index([userId])
@@ -142,6 +146,7 @@ model Question {
   options       Json
   correctAnswer Json
   explanation   String
+  timeLimit     Int?         // in seconds
   createdAt     DateTime     @default(now())
 
   @@index([caseId])
