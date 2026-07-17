@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
-// Paths that do NOT require authentication
 const PUBLIC_PATHS = ["/", "/auth/login", "/auth/register"];
-// Paths that are only accessible by ADMIN role
-const ADMIN_PATHS = ["/admin"];
+const ADMIN_PATHS = ["/admin", "/api/admin"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -23,7 +21,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow public keep-alive cron (called by external scheduler)
+  // Allow public keep-alive cron endpoint
   if (pathname === "/api/cron/keep-alive") {
     return NextResponse.next();
   }
@@ -33,10 +31,18 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  const isApiRoute = pathname.startsWith("/api/");
+
   // Validate token from cookie
   const token = req.cookies.get("cc_auth")?.value;
 
   if (!token) {
+    if (isApiRoute) {
+      return NextResponse.json(
+        { error: "احراز هویت الزامی است.", code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
+    }
     const loginUrl = new URL("/auth/login", req.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
@@ -45,21 +51,31 @@ export async function middleware(req: NextRequest) {
   const user = await verifyToken(token);
 
   if (!user) {
-    // Token is invalid or expired — clear cookie and redirect to login
+    if (isApiRoute) {
+      const response = NextResponse.json(
+        { error: "توکن منقضی یا نامعتبر است.", code: "TOKEN_INVALID" },
+        { status: 401 }
+      );
+      response.cookies.delete("cc_auth");
+      return response;
+    }
     const response = NextResponse.redirect(new URL("/auth/login", req.url));
     response.cookies.delete("cc_auth");
     return response;
   }
 
   // Admin-only route protection
-  if (
-    ADMIN_PATHS.some((p) => pathname.startsWith(p)) &&
-    user.role !== "ADMIN"
-  ) {
+  if (ADMIN_PATHS.some((p) => pathname.startsWith(p)) && user.role !== "ADMIN") {
+    if (isApiRoute) {
+      return NextResponse.json(
+        { error: "دسترسی غیرمجاز. فقط ادمین می‌تواند این عملیات را انجام دهد.", code: "FORBIDDEN" },
+        { status: 403 }
+      );
+    }
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  // Attach user info to request headers for server components
+  // Attach user info to request headers for server components / route handlers
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-user-id", user.userId);
   requestHeaders.set("x-user-email", user.email);

@@ -1,14 +1,14 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaNeonHTTP } from "@prisma/adapter-neon";
 import { neon } from "@neondatabase/serverless";
 
 function createEdgePrismaClient(): PrismaClient {
   if (!process.env.DATABASE_URL) {
-    // Return a dummy client during build time if DATABASE_URL is not set
+    // Fallback during build time when DATABASE_URL is not available
     return new PrismaClient();
   }
   const sql = neon(process.env.DATABASE_URL);
-  const adapter = new PrismaNeon(sql);
+  const adapter = new PrismaNeonHTTP(sql);
   return new PrismaClient({ adapter } as any);
 }
 

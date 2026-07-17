@@ -5,11 +5,20 @@ export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   try {
+    // Defense-in-depth: verify admin role from middleware-set header
+    const userRole = req.headers.get("x-user-role");
+    if (userRole !== "ADMIN") {
+      return NextResponse.json(
+        { error: "دسترسی غیرمجاز. فقط ادمین می‌تواند کیس جدید ثبت کند." },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
-    const { 
-      title, slug, difficulty, demographic, chiefComplaint, 
-      hpi, medicalHistory, examNotes, radiologyImageUrl, 
-      scientificSource, referenceRubric, diagnosticTests 
+    const {
+      title, slug, difficulty, demographic, chiefComplaint,
+      hpi, medicalHistory, examNotes, radiologyImageUrl,
+      scientificSource, referenceRubric, diagnosticTests
     } = body;
 
     if (!title || !slug || !chiefComplaint) {
@@ -18,6 +27,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
 
     // Connect to database and try creating Subject and Case
     let savedCase = null;
